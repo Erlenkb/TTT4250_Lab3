@@ -4,7 +4,7 @@ file2 = "Beam_Pattern.txt";
 Beam_Pattern = importdata(file2, "\t", 1);
 Freq_Response = importdata(file1, "\t", 1);
 Degrees = [90 75 60 45 30 15 0 -15 -30 -45 -60 -75 -90];
-freq = [8000 9000 10000 11000 12000 13000 14000 15000 16000];
+freq = [8 9 10 11 12 13 14 15 16];
 Freq_8KHz = Beam_Pattern.data(1,2:27);
 Freq_12KHz = Beam_Pattern.data(2,2:27);
 Freq_16KHz = Beam_Pattern.data(3,2:27);
@@ -48,26 +48,32 @@ deg_90_mean = log10(deg_90_mean(deg_90_mean~=0) ./ scalar1);
 %% Plot beam patter
 figure(1)
 subplot(1,2,1)
-First = polardb(Degrees, Freq_8KHz_mean, -5, 1,"-g")
+First = polardb(Degrees, Freq_8KHz_mean, -3, 1,"-g")
 hold on
-second = polardb(Degrees, Freq_12KHz_mean, -5, 1, "-b")
-third = polardb(Degrees, Freq_16KHz_mean, -5, 1, "-r")
+second = polardb(Degrees, Freq_12KHz_mean, -3, 1, "-b")
+third = polardb(Degrees, Freq_16KHz_mean, -3, 1, "-r")
 hold off
-legend("", "", "", "","","","8KHz", "12KHz", "16KHz");
+legend("", "", "", "","","","8KHz", "12KHz", "16KHz", "location", "best");
+set(gca,'fontsize',12,'fontweight','bold');
+set(gcf,'units','centimeters','position',[2,1,29.7,11.0])
 
 %% Plot frequency response for the three distinct angles
 figure(1)
 subplot(1,2,2)
-plot(freq, deg_0_mean);
+semilogx(freq, deg_0_mean);
 hold on
-plot(freq, deg_45_mean);
-plot(freq, deg_90_mean);
+semilogx(freq, deg_45_mean);
+semilogx(freq, deg_90_mean);
 hold off
 grid on
 xlabel("Frequency [KHz]");
 ylabel("Magnitude [dB]");
 title("Frequency response");
-legend("0 degrees", "45 degrees", "90 degrees");
+legend("0 degrees", "45 degrees", "90 degrees","location","best");
+set(gca,'fontsize',12,'fontweight','bold');
+set(gcf,'units','centimeters','position',[2,1,29.7,11.0])
+
+exportgraphics(figure(1), ['Lab3.png'],'Resolution',450)
 
 
 
