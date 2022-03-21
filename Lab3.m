@@ -13,8 +13,8 @@ deg_0 = Freq_Response.data(1,1:18);
 deg_45 = Freq_Response.data(2,1:18);
 deg_90 = Freq_Response.data(3,1:18);
 
-scalar1 = 5.44;
-scalar2 = 6.36;
+scalar1 = max([deg_0 deg_45 deg_90]);
+scalar2 = max([Freq_16KHz Freq_12KHz Freq_8KHz]);
 
 Freq_8KHz_mean = zeros(1,13);
 Freq_12KHz_mean = zeros(1,13);
@@ -35,11 +35,13 @@ for i=[1:2:size(deg_0,2)]
     deg_45_mean(i) = mean([deg_45(i) deg_45(i+1)]);
     deg_90_mean(i) = mean([deg_90(i) deg_90(i+1)]);
 end
-
+Freq_8KHz_mean = Freq_8KHz_mean(Freq_8KHz_mean~=0);
+Freq_12KHz_mean = Freq_12KHz_mean(Freq_12KHz_mean~=0);
+Freq_16KHz_mean = Freq_16KHz_mean(Freq_16KHz_mean~=0);
 %% Normalize the two sets by the biggest value for both sets sepertely
-Freq_8KHz_mean = log10(Freq_8KHz_mean(Freq_8KHz_mean~=0) ./ scalar2);
-Freq_12KHz_mean = log10(Freq_12KHz_mean(Freq_12KHz_mean~=0) ./ scalar2);
-Freq_16KHz_mean = log10(Freq_16KHz_mean(Freq_16KHz_mean~=0) ./scalar2);
+Freq_8KHz_mean = 20*log10(Freq_8KHz_mean ./ scalar2);
+Freq_12KHz_mean = 20*log10(Freq_12KHz_mean ./ scalar2);
+Freq_16KHz_mean = 20*log10(Freq_16KHz_mean ./scalar2);
 
 deg_0_mean = log10(deg_0_mean(deg_0_mean~=0) ./ scalar1);
 deg_45_mean = log10(deg_45_mean(deg_45_mean~=0) ./ scalar1);
@@ -48,14 +50,15 @@ deg_90_mean = log10(deg_90_mean(deg_90_mean~=0) ./ scalar1);
 %% Plot beam patter
 figure(1)
 subplot(1,2,1)
-First = polardb(Degrees, Freq_8KHz_mean, -3, 1,"-g")
+First = polardb(Degrees, Freq_12KHz_mean, -15, 2,"-g")
 hold on
-second = polardb(Degrees, Freq_12KHz_mean, -3, 1, "-b")
-third = polardb(Degrees, Freq_16KHz_mean, -3, 1, "-r")
+second = polardb(Degrees, Freq_8KHz_mean, -15, 2, "-b")
+third = polardb(Degrees, Freq_16KHz_mean, -15, 2, "-r")
 hold off
-legend("", "", "", "","","","8KHz", "12KHz", "16KHz", "location", "best");
+legend("", "", "", "","","","12KHz", "8KHz", "16KHz", "location", "best");
 set(gca,'fontsize',12,'fontweight','bold');
-set(gcf,'units','centimeters','position',[2,1,29.7,11.0])
+%set(gcf,'units','centimeters','position',[2,1,29.7,11.0])
+
 
 %% Plot frequency response for the three distinct angles
 figure(1)
@@ -64,6 +67,8 @@ semilogx(freq, deg_0_mean);
 hold on
 semilogx(freq, deg_45_mean);
 semilogx(freq, deg_90_mean);
+%semilogx(freq, tot_deg);
+
 hold off
 grid on
 xlabel("Frequency [KHz]");
