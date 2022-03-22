@@ -1,12 +1,14 @@
 file1 = "Freq_Response.txt";
 file2 = "Beam_Pattern.txt";
 
+%% Global paramaters
 Beam_Pattern = importdata(file2, "\t", 1);
 Freq_Response = importdata(file1, "\t", 1);
 
 Degrees = [90 75 60 45 30 15 0 -15 -30 -45 -60 -75 -90];
 freq = [8 9 10 11 12 13 14 15 16];
 
+%% Fetch the data
 Freq_8KHz = Beam_Pattern.data(1,2:27);
 Freq_12KHz = Beam_Pattern.data(2,2:27);
 Freq_16KHz = Beam_Pattern.data(3,2:27);
@@ -15,9 +17,11 @@ deg_0 = Freq_Response.data(1,1:18);
 deg_45 = Freq_Response.data(2,1:18);
 deg_90 = Freq_Response.data(3,1:18);
 
+%% Scalar values used to normalise the data set
 scalar1 = max([deg_0 deg_45 deg_90]);
 scalar2 = max([Freq_16KHz Freq_12KHz Freq_8KHz]);
 
+%% Generate two temporary vectors to store the values in
 Freq_8KHz_mean = zeros(1,13);
 Freq_12KHz_mean = zeros(1,13);
 Freq_16KHz_mean = zeros(1,13);
@@ -26,17 +30,18 @@ deg_0_mean = zeros(1,8);
 deg_45_mean = zeros(1,8);
 deg_90_mean = zeros(1,8);
 
+%% Average the data and remove the zeros
 for i=[1:2:size(Freq_8KHz,2)]
     Freq_8KHz_mean(i) = mean([Freq_8KHz(i) Freq_8KHz(i+1)]);
     Freq_12KHz_mean(i) = mean([Freq_12KHz(i) Freq_12KHz(i+1)]);
     Freq_16KHz_mean(i) = mean([Freq_16KHz(i) Freq_16KHz(i+1)]);
 end
-
 for i=[1:2:size(deg_0,2)]
     deg_0_mean(i) = mean([deg_0(i) deg_0(i+1)]);
     deg_45_mean(i) = mean([deg_45(i) deg_45(i+1)]);
     deg_90_mean(i) = mean([deg_90(i) deg_90(i+1)]);
 end
+
 Freq_8KHz_mean = Freq_8KHz_mean(Freq_8KHz_mean~=0) ./ scalar2;
 Freq_12KHz_mean = Freq_12KHz_mean(Freq_12KHz_mean~=0) ./ scalar2;
 Freq_16KHz_mean = Freq_16KHz_mean(Freq_16KHz_mean~=0) ./scalar2;
@@ -89,10 +94,11 @@ rho_8khz_1 =  flip(Freq_8KHz_mean(1:7) ,2);
 rho_12khz_1 = flip(Freq_12KHz_mean(1:7),2);
 rho_16khz_1 = flip(Freq_16KHz_mean(1:7),2);
 
+%% D 
 D_8khz_1 = 2 / (sum((rho_8khz_1.^2) .* sind(theta_1)));
 D_12khz_1 = 2 / (sum((rho_12khz_1.^2) .* sind(theta_1)));
 D_16khz_1 = 2 / (sum((rho_16khz_1.^2) .* sind(theta_1)));
-
+%% DI
 DI_8kh_1 = 10*log10(D_8khz_1)
 DI_12khz_1 = 10*log10(D_12khz_1);
 DI_16khz_1 = 10*log10(D_16khz_1);
@@ -103,10 +109,11 @@ rho_8khz_2  = Freq_8KHz_mean(7:13);
 rho_12khz_2 = Freq_12KHz_mean(7:13);
 rho_16khz_2 = Freq_16KHz_mean(7:13);
 
+%% D
 D_8khz_2 = 2 / (sum((rho_8khz_2.^2) .* sind(theta_1)));
 D_12khz_2 = 2 / (sum((rho_12khz_2.^2) .* sind(theta_1)));
 D_16khz_2 = 2 / (sum((rho_16khz_2.^2) .* sind(theta_1)));
-
+%% DI
 DI_8kh_2 = 10*log10(D_8khz_2)
 DI_12khz_2 = 10*log10(D_12khz_2);
 DI_16khz_2 = 10*log10(D_16khz_2);
