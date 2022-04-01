@@ -6,6 +6,8 @@ Beam_Pattern = importdata(file2, "\t", 1);
 Freq_Response = importdata(file1, "\t", 1);
 
 Degrees = [90 75 60 45 30 15 0 -15 -30 -45 -60 -75 -90];
+Degrees_rad = Degrees * (pi / 180);
+
 freq = [8 9 10 11 12 13 14 15 16];
 
 %% Fetch the data
@@ -20,6 +22,13 @@ deg_90 = Freq_Response.data(3,1:18);
 %% Scalar values used to normalise the data set
 scalar1 = max([deg_0 deg_45 deg_90]);
 scalar2 = max([Freq_16KHz Freq_12KHz Freq_8KHz]);
+scalar_0  = max(deg_0);
+scalar_45 = max(deg_45);
+scalar_90 = max(deg_90);
+scalar_8 = max(Freq_8KHz);
+scalar_12 = max(Freq_12KHz);
+scalar_16 = max(Freq_16KHz);
+
 
 %% Generate two temporary vectors to store the values in
 Freq_8KHz_mean = zeros(1,13);
@@ -42,18 +51,22 @@ for i=[1:2:size(deg_0,2)]
     deg_90_mean(i) = mean([deg_90(i) deg_90(i+1)]);
 end
 
+%% Scale values for plot
 Freq_8KHz_mean = Freq_8KHz_mean(Freq_8KHz_mean~=0) ./ scalar2;
 Freq_12KHz_mean = Freq_12KHz_mean(Freq_12KHz_mean~=0) ./ scalar2;
 Freq_16KHz_mean = Freq_16KHz_mean(Freq_16KHz_mean~=0) ./scalar2;
+
+%% Scale values for D
+
 
 %% Normalize the two sets by the biggest value for both sets sepertely
 Freq_8KHz_mean_db = 20*log10(Freq_8KHz_mean);
 Freq_12KHz_mean_db = 20*log10(Freq_12KHz_mean);
 Freq_16KHz_mean_db = 20*log10(Freq_16KHz_mean);
 
-deg_0_mean = log10(deg_0_mean(deg_0_mean~=0) ./ scalar1);
-deg_45_mean = log10(deg_45_mean(deg_45_mean~=0) ./ scalar1);
-deg_90_mean = log10(deg_90_mean(deg_90_mean~=0) ./ scalar1);
+deg_0_mean = 20*log10(deg_0_mean(deg_0_mean~=0) ./ scalar_0);
+deg_45_mean = 20*log10(deg_45_mean(deg_45_mean~=0) ./ scalar_45);
+deg_90_mean = 20*log10(deg_90_mean(deg_90_mean~=0) ./ scalar_90);
 
 %% Plot beam patter
 figure(1)
@@ -117,5 +130,67 @@ D_16khz_2 = 2 / (sum((rho_16khz_2.^2) .* sind(theta_1)));
 DI_8kh_2 = 10*log10(D_8khz_2)
 DI_12khz_2 = 10*log10(D_12khz_2);
 DI_16khz_2 = 10*log10(D_16khz_2);
+
+
+%% Bessel function
+a = 0.054;
+c = 1464;
+%lambda_8khz = 
+ka_8khz = (2 * pi * 8000 / c) * (abs(Degrees_rad));
+ka_12khz = (2 * pi * 12000 / c) * (abs(Degrees_rad));
+ka_16khz = (2 * pi * 16000 / c) * (abs(Degrees_rad));
+
+Bessel_8 = besselj(1, ka_8khz);
+Bessel_12 = besselj(1, ka_12khz);
+Bessel_16 = besselj(1, ka_16khz);
+
+B_8 = abs(Bessel_8 ./ ka_8khz);
+B_12 = abs(Bessel_12 ./ ka_12khz);
+B_16 = abs(Bessel_16 ./ ka_16khz);
+
+B_8(7) = 1;
+B_12(7) = 1;
+B_16(7) = 1;
+
+%% Scale 
+
+Max_all = max([B_8 B_12 B_16]);
+
+B_8_s = 20*log10(B_8 / max(B_8));
+B_12_s = 20*log10(B_12 / max(B_12));
+B_16_s = 20*log10(B_16 / max(B_16));
+
+B_8 = 20*log10(B_8 / Max_all);
+B_12 = 20*log10(B_12 / Max_all);
+B_16 = 20*log10(B_16 / Max_all);
+
+%B_8 = B_8 / Max_all;
+%B_12 = B_12 / Max_all;
+%B_16 = B_16 / Max_all;
+N = 120;
+step = 30;
+
+figure(5)
+subplot(1,3,1)
+First = polardb(Degrees, B_8, -N, step,"-b");
+legend("", "", "", "","","","8KHz", "location", "best");
+set(gcf,'units','centimeters','position',[3,1,29.7,11.0]);
+set(gca,'fontsize',12,'fontweight','bold');
+figure(5)
+subplot(1,3,2)
+second = polardb(Degrees, B_12, -N, step, "-g");
+legend("", "", "", "","","","12KHz", "location", "best");
+set(gcf,'units','centimeters','position',[3,1,29.7,11.0])
+set(gca,'fontsize',12,'fontweight','bold');
+figure(5)
+subplot(1,3,3)
+third = polardb(Degrees, B_16, -N, step, "-r");
+legend("", "", "", "","","","16KHz", "location", "best");
+set(gcf,'units','centimeters','position',[3,1,29.7,11.0]);
+
+%legend("", "", "", "","","","12KHz", "8KHz", "16KHz", "location", "best");
+set(gca,'fontsize',12,'fontweight','bold');
+exportgraphics(figure(5), ['Math_Directivity.png'],'Resolution',450)
+
 
 
